@@ -68,7 +68,7 @@ The CSV layout is `category,item,variety,date,price,unit`; dates are ISO
 `YYYY-MM-DD`. The ODS contains year and legacy combined worksheets. Both
 artifacts preserve GBP prices and the published physical unit.
 
-**137 series collected** in the source artifact verified on 2026-09-15.
+**127 series collected** in the source artifact verified on 2026-09-15.
 Product, price, unit and reference date are all preserved: the physical unit
 (`kg`, `head`, `twin`, `unit`) carries into the series name and description,
 because the fleet `unit` column can only say `currency`. A series that ever
