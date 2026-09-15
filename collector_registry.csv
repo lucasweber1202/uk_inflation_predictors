@@ -1,0 +1,11 @@
+source_family,repository,status,scope,notes
+desnz,collector_desnz_uk,implementation_pr_open,DESNZ UK predictor feeds,Standalone road-fuels collector validated and submitted for review in PR #1.
+defra,collector_defra_uk,implementation_pr_open,DEFRA UK predictor feeds,Standalone fruit-and-vegetable collector validated with ODS plus CSV history and submitted for review in PR #1; extend here with bananas milk and agricultural prices.
+ofgem,collector_ofgem_uk,planned,Ofgem UK energy-price predictors,Create from collector_predictor_template.
+hmrc,collector_hmrc_uk,planned,HMRC duty and tax predictors,Create from collector_predictor_template.
+elexon,collector_elexon_uk,planned,Elexon GB electricity-market predictors,Create from collector_predictor_template.
+dft,collector_dft_uk,planned,DfT transport predictors,Create from collector_predictor_template.
+orr,collector_orr_uk,planned,ORR rail predictors,Create from collector_predictor_template.
+ofcom,collector_ofcom_uk,candidate,Ofcom communications pricing,Only create after an automatable licensed source is verified.
+autotrader,collector_autotrader_uk,candidate,Used-car pricing,Only create after redistribution and automation terms are verified.
+rentals,collector_rentals_uk,candidate,Rental-market indicators,Do not scrape; create only if a licensed/open feed is identified.
