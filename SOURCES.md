@@ -59,17 +59,26 @@ source, which is why it only ever produces `inferred` availability.
 - **Publisher:** Department for Environment, Food & Rural Affairs
 - **Page:** https://www.gov.uk/government/statistical-data-sets/wholesale-fruit-and-vegetable-prices-weekly-average
 - **Licence:** Open Government Licence v3.0 (stated on the page)
-- **Frequency:** irregular · **History:** 2017-11-03 → present
-- **Format:** one tidy machine-readable CSV, `fruitvegprices-YYMMDD.csv`
+- **Frequency:** irregular · **History:** 2015-01-09 → present
+- **Format:** official historical ODS plus tidy machine-readable CSV:
+  - `fruitveg-weeklyhort-YYMMDD.ods` — maximum official history, from 2015
+  - `fruitvegprices-YYMMDD.csv` — modern machine-readable observations, from 2017
 
-**Verified layout:** `category,item,variety,date,price,unit`. Dates are ISO
-`YYYY-MM-DD`. Prices are GBP per the stated physical unit.
+The CSV layout is `category,item,variety,date,price,unit`; dates are ISO
+`YYYY-MM-DD`. The ODS contains year and legacy combined worksheets. Both
+artifacts preserve GBP prices and the published physical unit.
 
-**71 series collected**, every fruit and vegetable series in the dataset.
+**127 series collected** in the source artifact verified on 2026-09-15.
 Product, price, unit and reference date are all preserved: the physical unit
 (`kg`, `head`, `twin`, `unit`) carries into the series name and description,
 because the fleet `unit` column can only say `currency`. A series that ever
 appeared in two different units would fail the run.
+
+**Overlap rule.** The ODS and CSV must overlap. Identifiers, dates and units are
+normalized consistently; the CSV wins deterministically in the overlapping
+period. Differences up to £0.01 are accepted because the workbook displays
+some values at lower precision. Any larger unexplained difference fails the
+run. No value is invented to fill a gap.
 
 **Scope filter.** The same file also publishes `cut_flowers` and `pot_plants`.
 These are horticultural products that do not enter consumer food prices and are
@@ -89,7 +98,10 @@ and `biweekly` would both be false for part of the history, so the honest fleet
 label is `irregular`, with the true cadence recoverable from the reference dates
 themselves.
 
-**Not verified:** DEFRA publishes no revision policy on this page.
+**Point in time:** GOV.UK change history proves timestamps for the modern
+period. Earlier ODS history is retained as `availability_basis=inferred`, so it
+is excluded from evidence-backed as-of queries by default. DEFRA publishes no
+revision policy on this page.
 
 ---
 

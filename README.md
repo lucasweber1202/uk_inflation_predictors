@@ -1,110 +1,50 @@
 # uk_inflation_predictors
 
-Open, historically reproducible **predictor (X) data** for forecasting and
-nowcasting the UK Consumer Prices Index.
+Research layer for forecasting and nowcasting UK CPI from independently collected predictor data.
 
-## What this repository is, and what it is not
+**This repository no longer owns source collection.** Each publisher is collected by a standalone repository created from the UK predictor collector template.
 
-This repository is **separate from the ONS collectors** and has a different job.
+## Repository roles
 
-| | Repository | Role |
-|---|---|---|
-| **Official targets (Y)** | [`collector_ons_cpi`](https://github.com/lucasweber1202/collector_ons_cpi), `collector_ons_ex_cpi` | The authoritative UK CPI series, its official basket weights, and the bottom-up reconciliation of the published index. These remain the **only** source of truth for the variables a model is evaluated against. |
-| **Alternative predictors (X)** | **`uk_inflation_predictors`** (this repository) | Open, non-ONS explanatory variables that may help predict those targets, plus everything needed to reconstruct what was knowable at a past instant. |
+### Official targets (Y)
 
-Consequences of that split, which this repository holds to strictly:
+- `collector_ons_cpi`
+- `collector_ons_ex_cpi`
 
-- **No CPI is rebuilt here.** No forecast-target weights, no basket, no
-  aggregation hierarchy, no index construction. `collector_ons_cpi` owns that
-  and its logic is deliberately not copied.
-- **No aggregate predictor index is invented.** Individual published levels are
-  stored as published. Combining them into a "food index" or "energy index" is
-  a modelling decision for the research layer, not a collection decision.
-- **No transformations are stored.** No month-on-month, year-on-year, monthly
-  average, month-to-date, rolling window, diffusion or volatility measure is
-  written to the database. Only the raw published level. Transformations are
-  derived downstream, where the choice of transformation is part of the
-  research, not baked irreversibly into storage.
-- **No modelling.** No regressions, AR models, forecasting, machine learning,
-  feature selection or dashboards live here. This is a data foundation.
+They own official CPI levels, classification, weights and target validation.
 
-## Implemented sources (v0.1)
+### Predictor collectors (X)
 
-| source_id | Source | Publisher | Frequency | History | Series |
-|---|---|---|---|---|---|
-| `desnz_road_fuels` | [Weekly road fuel prices](https://www.gov.uk/government/statistics/weekly-road-fuel-prices) | DESNZ | Weekly | 2003-06-09 → present | 6 |
-| `defra_fruit_veg` | [Wholesale fruit and vegetable prices](https://www.gov.uk/government/statistical-data-sets/wholesale-fruit-and-vegetable-prices-weekly-average) | DEFRA | Irregular (weekly/fortnightly) | 2017-11-03 → present | 71 |
+- [`collector_desnz_uk`](https://github.com/lucasweber1202/collector_desnz_uk) — DESNZ predictor feeds, beginning with weekly road fuels.
+- [`collector_defra_uk`](https://github.com/lucasweber1202/collector_defra_uk) — DEFRA predictor feeds, beginning with fruit/vegetable wholesale prices.
+- future: `collector_ofgem_uk`, `collector_hmrc_uk`, `collector_elexon_uk`, `collector_dft_uk`, `collector_orr_uk`.
 
-`source_registry.csv` additionally registers twelve further candidate sources
-that are catalogued but **not implemented**, with every unverifiable field
-explicitly marked `unknown`. See [SOURCES.md](SOURCES.md).
+Predictor collectors own extraction, raw values, vintages, source snapshots and point-in-time availability. They do not import this repository or each other.
 
-## Usage
+### Research layer (this repository)
 
-```bash
-python -m scripts.init_db                      # create schema and tables
-python main.py --source desnz_road_fuels       # one source
-python main.py --source defra_fruit_veg
-python main.py --all                           # every implemented source
-```
+This repository owns:
 
-A fresh database performs the full historical backfill. A second run against an
-unchanged source writes **nothing** to `time_series`, `availability`,
-`source_snapshots` or `metadata`, and one successful row to `logs`.
+- `source_registry.csv`: source/publisher research inventory;
+- `collector_registry.csv`: which repository owns each implemented/planned source family;
+- `predictor_map.csv`: predictor → ONS target crosswalk;
+- future feature definitions and transformations;
+- correlation and cross-correlation studies;
+- lead/lag selection;
+- AR(p) benchmark models;
+- AR(p)+predictor models;
+- rolling/expanding pseudo-out-of-sample evaluation;
+- RMSE, MAE, bias, directional/turning-point metrics;
+- predictor ranking by incremental OOS value.
 
-## Configuration
+## Non-negotiable research rule
 
-Copy `.env.example` to `.env`. `PROD=false` uses the local PostgreSQL database in
-`PREDICTORS_DB_URL`; `PROD=true` uses Databricks (`macrobond_inhouse` catalog).
-Raw downloaded files go to a gitignored directory and are **never committed**;
-`source_snapshots` is the traceability record.
+Every historical experiment must query predictor collectors point-in-time. A feature for forecast instant `t` may use only vintages with `available_at <= t`. `inferred`/`unknown` availability is excluded unless an experiment explicitly opts into reconstructed history and labels the result accordingly.
 
-## Database
+## What does not belong here
 
-Schema `uk_inflation_predictors`, five tables:
+No HTTP source collector, Databricks ingestion pipeline, raw source snapshot storage, publisher-specific parser or source credential belongs in this repository after the split.
 
-- **`metadata`** — one row per predictor: identifier, `source_id`, name,
-  description, `country` (`GBP`, the fleet currency vocabulary), frequency,
-  unit, first/last observation, observation count, source URL, last publish
-  date.
-- **`time_series`** — append-only `(series_id, reference_date, vintage_date)`
-  observations of raw published levels. Revisions add vintages; historical
-  vintages are never overwritten.
-- **`availability`** — the point-in-time companion: when each stored vintage
-  actually became knowable, and **how strong the evidence for that is**.
-- **`source_snapshots`** — one row per distinct raw file parsed, keyed by the
-  SHA256 of its bytes, with ETag, Last-Modified and local path.
-- **`logs`** — one row per execution, success or failure.
+## Migration state
 
-## Point-in-time retrieval
-
-```python
-from datetime import UTC, datetime
-from scripts.availability import get_series_as_of
-from scripts.db import build_engine
-
-rows = get_series_as_of(
-    build_engine(),
-    "DEFRA_FRUITVEG_FRUIT_APPLES_GALA",
-    datetime(2026, 9, 1, tzinfo=UTC),
-)
-```
-
-No returned row can have `available_at > as_of`. By default only
-evidence-backed availability answers the query; reconstructed availability
-(`inferred`, `unknown`) must be opted into explicitly. This is the central
-guarantee of the repository — read [POINT_IN_TIME.md](POINT_IN_TIME.md) before
-using the data for any backtest.
-
-## Predictor-to-target mapping
-
-`predictor_map.csv` links every predictor to the CPI series it is meant to help
-predict, in `collector_ons_cpi`. Where the ONS native identifier could not be
-confirmed by reading that repository, the target is written as
-`PENDING_VERIFICATION` rather than guessed.
-
-## Documents
-
-- [METHODOLOGY.md](METHODOLOGY.md) — identifiers, storage contract, validation.
-- [SOURCES.md](SOURCES.md) — what each source publishes and what is not yet verified.
-- [POINT_IN_TIME.md](POINT_IN_TIME.md) — availability semantics and their limits.
+The original V0.1 collection code is preserved in Git history. Standalone repository trees were prepared before the research-only tree was created, so source ownership moved without losing provenance. The reviewed migration branches are `migration/desnz-standalone-v2` and `migration/defra-standalone-v2` in their owning repositories.
