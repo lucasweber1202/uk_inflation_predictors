@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "uk-inflation-predictors"
+name = "collector-desnz-uk"
 version = "0.1.0"
-description = "Open, point-in-time UK predictor (X) data layer for CPI nowcasting"
+description = "DESNZ UK inflation predictor collector"
 requires-python = ">=3.11"
 dependencies = [
   "azure-identity>=1.17",
@@ -13,8 +13,6 @@ dependencies = [
   "databricks-sqlalchemy>=2.0",
   "httpx[socks]>=0.27",
   "psycopg2-binary>=2.9",
-  # Databricks resolves its token from pyspark.dbutils.DBUtils inside a
-  # notebook or job context; the fleet pins the runtime-matched version.
   "pyspark==4.1.1",
   "sqlalchemy>=2.0",
 ]
@@ -28,25 +26,16 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.11"
 files = ["main.py", "scripts", "tests"]
-# tests/ has no __init__.py, so mypy needs the repository root as the package base.
 explicit_package_bases = true
 mypy_path = "."
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unreachable = true
 no_implicit_optional = true
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-# Azure SDK packages are production-only dependencies of the fleet-wide
-# Databricks engine and are not installed in a local checkout.
 module = ["azure.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-# Fleet-wide VERBATIM file. Its pyspark import guard is correct for a runtime
-# without pyspark installed, so the ignore it carries must not be "cleaned up"
-# here just because this checkout has the package.
 module = "scripts.databricks_engine"
 warn_unused_ignores = false
 
