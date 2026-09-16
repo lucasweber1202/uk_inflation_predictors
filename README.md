@@ -49,6 +49,13 @@ Every historical experiment must query predictor collectors point-in-time. A fea
 
 No HTTP source collector, Databricks ingestion pipeline, raw source snapshot storage, publisher-specific parser or source credential belongs in this repository after the split.
 
+## Source verification
+
+`SOURCE_FICHES.md` holds the verified fiche for every predictor source that is
+not yet implemented: landing page, real artifacts, format, frequency, history,
+release rule and blockers, each filled from the live source rather than from a
+prior registry entry. A collector is not coded until its fiche is complete.
+
 ## Registry status vocabulary
 
 `collector_registry.csv` uses:
