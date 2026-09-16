@@ -48,6 +48,61 @@ This repository owns:
 - RMSE, MAE, bias, directional/turning-point metrics;
 - predictor ranking by incremental OOS value.
 
+## Research engine
+
+The repository now contains a deliberately flat Python research engine under
+`scripts/`. It reads the collectors' persisted `metadata`, `time_series` and
+`availability` contracts; it never imports collector source code.
+
+The supported path is:
+
+```text
+persisted raw predictor
+→ strict/reconstructed PIT filter
+→ as-of panel
+→ frequency-aware feature
+→ official target release cutoff
+→ monthly target alignment
+→ historical-mean / last / AR benchmark
+→ AR(p) + one predictor
+→ expanding pseudo-OOS
+→ RMSE / MAE / bias / directional accuracy
+→ full ranking table
+```
+
+`target_registry.csv` is the versioned ONS target crosswalk. An unresolved
+`PENDING_VERIFICATION` target fails closed and cannot enter an experiment.
+`predictor_map.csv` is the candidate-feature contract, not a claim of predictive
+power.
+
+### Reproduce an experiment
+
+Install the small research dependency set and provide CSV extracts of the
+persisted contracts (not raw publisher files):
+
+```bash
+python -m pip install -r requirements.txt
+python -m scripts.experiments \
+  --config configs/first_battery.yml \
+  --target-csv target_vintages.csv \
+  --predictor-csv predictor_contract.csv \
+  --as-of 2026-09-10T23:59:59Z \
+  --output results/desnz_fuels.csv
+```
+
+The CLI also writes a JSON run manifest beside the ranking CSV. Inputs must
+carry their vintages and availability evidence. The checked-in repository does
+not contain production databases or large raw snapshots, so empirical rankings
+are generated only in an environment with those data contracts available.
+
+Quality gates:
+
+```bash
+pytest -q
+ruff check .
+mypy scripts tests
+```
+
 ## Non-negotiable research rule
 
 Every historical experiment must query predictor collectors point-in-time. A feature for forecast instant `t` may use only vintages with `available_at <= t`. `inferred`/`unknown` availability is excluded unless an experiment explicitly opts into reconstructed history and labels the result accordingly.
