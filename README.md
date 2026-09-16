@@ -86,11 +86,13 @@ python -m scripts.experiments \
   --config configs/first_battery.yml \
   --target-csv target_vintages.csv \
   --predictor-csv predictor_contract.csv \
-  --as-of 2026-09-10T23:59:59Z \
   --output results/desnz_fuels.csv
 ```
 
-The CLI also writes a JSON run manifest beside the ranking CSV. Inputs must
+The optional `--as-of` is only a ceiling that prevents later forecast origins
+from running; it is never used as a global reconstruction timestamp. The CLI
+also writes a detailed per-origin forecast CSV and a JSON run manifest beside
+the summary CSV. Inputs must
 carry their vintages and availability evidence. The checked-in repository does
 not contain production databases or large raw snapshots, so empirical rankings
 are generated only in an environment with those data contracts available.
