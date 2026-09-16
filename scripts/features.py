@@ -60,6 +60,34 @@ def mtd_feature(frame: pd.DataFrame, as_of: str | pd.Timestamp, statistic: str =
     raise ValueError("MTD statistic must be mean or last")
 
 
+def feature_series(frame: pd.DataFrame, feature: str, as_of: str | pd.Timestamp) -> pd.Series:
+    """Build one configured feature; partial-period features are stamped to cutoff month."""
+    monthly = {"monthly_mean", "monthly_last", "monthly_median", "monthly_min", "monthly_max"}
+    if feature in monthly:
+        return aggregate_monthly(frame, feature)
+    if feature in {"mom", "yoy"}:
+        level = aggregate_monthly(frame, "monthly_last")
+        return transformations(level)[feature]
+    cutoff = pd.Timestamp(as_of).tz_localize(None)
+    dates = pd.to_datetime(frame["reference_date"]).dt.tz_localize(None)
+    if frame.empty:
+        return pd.Series(dtype=float, name=feature)
+    months = pd.period_range(dates.min().to_period("M"), cutoff.to_period("M"), freq="M")
+    result: dict[pd.Timestamp, float] = {}
+    for period in months:
+        origin = min(period.end_time.normalize(), cutoff)
+        if feature == "mtd_mean":
+            value = mtd_feature(frame, origin, "mean")
+        elif feature == "mtd_last":
+            value = mtd_feature(frame, origin, "last")
+        elif feature in {"7d_mean", "14d_mean", "21d_mean"}:
+            value = trailing_feature(frame, origin, int(feature.split("d", 1)[0]), "mean")
+        else:
+            raise ValueError(f"Unsupported feature: {feature}")
+        result[period.to_timestamp()] = value
+    return pd.Series(result, name=feature, dtype=float).sort_index()
+
+
 def transformations(level: pd.Series) -> pd.DataFrame:
     level = level.sort_index().astype(float)
     return pd.DataFrame(
