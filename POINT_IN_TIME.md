@@ -24,6 +24,14 @@ T-10/T-5/T-1 are calculated from the target's first persisted official release
 timestamp. If the target extract cannot support a release calendar, the run
 fails rather than substituting a convenient publication day.
 
+## Forecast-origin execution
+
+The runner iterates target months. For each month it derives T-10/T-5/T-1 from
+the persisted first-release calendar, independently selects target and
+predictor vintages at that timestamp, builds the requested feature, fits on the
+then-available history, and emits the timestamp and cutoff on every forecast.
+There is no global modern as-of reconstruction.
+
 ## Automated leakage tests
 
 The suite contains adversarial rows for a future reference period, a future
