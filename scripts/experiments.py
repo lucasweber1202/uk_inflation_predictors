@@ -97,8 +97,13 @@ def run_from_frames(config_path: str | Path, target_frame: pd.DataFrame, predict
                         predictor = _monthly(feature_series(pit, feature, timestamp))
                         try:
                             validate_model_inputs(target, predictor, target_series_id=config.target, cutoff=pd.Timestamp(timestamp), availability=pit["available_at"], minimum_months=config.minimum_train_months, max_nan_fraction=config.max_nan_fraction)
-                        except ValueError:
-                            continue
+                        except ValueError as exc:
+                            if str(exc) in {
+                                "Insufficient aligned sample",
+                                "NaN fraction exceeds configured threshold",
+                            }:
+                                continue
+                            raise
                         for order in config.ar_orders:
                             for lag in config.predictor_lags:
                                 try:
@@ -114,10 +119,13 @@ def run_from_frames(config_path: str | Path, target_frame: pd.DataFrame, predict
                                     records.append({"target": config.target, "forecast_month": month, "forecast_timestamp": timestamp, "cutoff": cutoff_label, "pit_mode": pit_mode, "predictor": predictor_id, "feature": feature, "predictor_lag": lag, "ar_order": order, "benchmark": benchmark_name, "n_train": n_train, "forecast": forecast, "benchmark_forecast": benchmark, "actual": value, "error": forecast-value, "benchmark_error": benchmark-value})
     result = pd.DataFrame.from_records(records)
     if result.empty:
-        return result
+        raise ValueError("Insufficient train/OOS sample: no eligible forecasts")
     keys = ["target","cutoff","pit_mode","predictor","feature","predictor_lag","ar_order","benchmark"]
     counts = result.groupby(keys)["forecast_month"].transform("count")
-    return result[counts >= config.minimum_oos_predictions].reset_index(drop=True)
+    result = result[counts >= config.minimum_oos_predictions].reset_index(drop=True)
+    if result.empty:
+        raise ValueError("Insufficient OOS sample for every configured experiment")
+    return result
 
 def summarise(results: pd.DataFrame) -> pd.DataFrame:
     if results.empty:
