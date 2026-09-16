@@ -1,11 +1,11 @@
 source_family,repository,status,scope,notes
-desnz,collector_desnz_uk,implementation_pr_open,DESNZ UK predictor feeds,Standalone road-fuels collector validated and submitted for review in PR #1.
-defra,collector_defra_uk,implementation_pr_open,DEFRA UK predictor feeds,Standalone fruit-and-vegetable collector validated with ODS plus CSV history and submitted for review in PR #1; extend here with bananas milk and agricultural prices.
-ofgem,collector_ofgem_uk,planned,Ofgem UK energy-price predictors,Create from collector_predictor_template.
-hmrc,collector_hmrc_uk,planned,HMRC duty and tax predictors,Create from collector_predictor_template.
-elexon,collector_elexon_uk,planned,Elexon GB electricity-market predictors,Create from collector_predictor_template.
-dft,collector_dft_uk,planned,DfT transport predictors,Create from collector_predictor_template.
-orr,collector_orr_uk,planned,ORR rail predictors,Create from collector_predictor_template.
-ofcom,collector_ofcom_uk,candidate,Ofcom communications pricing,Only create after an automatable licensed source is verified.
-autotrader,collector_autotrader_uk,candidate,Used-car pricing,Only create after redistribution and automation terms are verified.
-rentals,collector_rentals_uk,candidate,Rental-market indicators,Do not scrape; create only if a licensed/open feed is identified.
+desnz,collector_desnz_uk,implemented_verified,DESNZ UK predictor feeds,"Standalone road-fuels collector merged to main. Six series, weekly, history from 2003-06-09. Extend here with further DESNZ datasets."
+defra,collector_defra_uk,implemented_verified,DEFRA UK predictor feeds,"Four datasets merged or in review on main: fruit_veg, banana_prices, milk_prices, agricultural_price_index. 266 series and 55973 observations verified 2026-09-16. Extend here with further DEFRA datasets; do not create a new repository per dataset."
+ofgem,collector_ofgem_uk,planned,Ofgem UK energy-price predictors,"Repository does not exist yet. Create from collector_predictor_template; first dataset is the energy price cap. Announcement date and effective date must be kept distinct."
+hmrc,collector_hmrc_uk,planned,HMRC duty and tax predictors,"Repository does not exist yet. Create from collector_predictor_template. One repository for four datasets: tobacco and alcohol duty rates plus tobacco and alcohol bulletins. Duty rates and bulletins are not the same economic series."
+elexon,collector_elexon_uk,planned,Elexon GB electricity-market predictors,"Repository does not exist yet. Create from collector_predictor_template; first dataset is Market Index Data. time_series.reference_date is a DATE, so settlement period must be encoded in series_id rather than adding a column."
+dft,collector_dft_uk,planned,DfT transport predictors,"Repository does not exist yet. Create from collector_predictor_template; first dataset is the bus fares index (BUS0415). Frequency, dimensions and the current table identifier must be re-verified against DfT before coding."
+orr,collector_orr_uk,planned,ORR rail predictors,"Repository does not exist yet. Create from collector_predictor_template; first dataset is rail fares. Collect fares tables only, not passenger usage."
+ofcom,collector_ofcom_uk,candidate,Ofcom communications pricing,"Do not create until an automatable licensed machine-readable source is verified. Ofcom research pages returned HTTP 403 to an automated request."
+autotrader,collector_autotrader_uk,candidate,Used-car pricing,"Commercial publisher. Do not create until redistribution terms, automation terms and a machine-readable artifact are verified."
+rentals,collector_rentals_uk,candidate,Rental-market indicators,"Commercial publishers (Zoopla, Rightmove). Do not scrape. Create only if a licensed or open feed is identified."

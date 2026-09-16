@@ -15,9 +15,13 @@ They own official CPI levels, classification, weights and target validation.
 
 ### Predictor collectors (X)
 
-- [`collector_desnz_uk`](https://github.com/lucasweber1202/collector_desnz_uk) — DESNZ predictor feeds, beginning with weekly road fuels.
-- [`collector_defra_uk`](https://github.com/lucasweber1202/collector_defra_uk) — DEFRA predictor feeds, beginning with fruit/vegetable wholesale prices.
-- future: `collector_ofgem_uk`, `collector_hmrc_uk`, `collector_elexon_uk`, `collector_dft_uk`, `collector_orr_uk`.
+- [`collector_desnz_uk`](https://github.com/lucasweber1202/collector_desnz_uk) — `desnz_road_fuels` (weekly, from 2003-06-09, 6 series).
+- [`collector_defra_uk`](https://github.com/lucasweber1202/collector_defra_uk) — `defra_fruit_veg`, `defra_banana_prices`, `defra_milk_prices`, `defra_agricultural_price_index` (266 series, 55,973 observations).
+- planned, repositories not yet created: `collector_ofgem_uk`, `collector_hmrc_uk`, `collector_elexon_uk`, `collector_dft_uk`, `collector_orr_uk`.
+
+One repository per publisher, and the schema name equals the repository name. A
+new dataset from a publisher already in the fleet is added to that publisher's
+repository, never as a new repository.
 
 Predictor collectors own extraction, raw values, vintages, source snapshots and point-in-time availability. They do not import this repository or each other.
 
@@ -44,6 +48,21 @@ Every historical experiment must query predictor collectors point-in-time. A fea
 ## What does not belong here
 
 No HTTP source collector, Databricks ingestion pipeline, raw source snapshot storage, publisher-specific parser or source credential belongs in this repository after the split.
+
+## Registry status vocabulary
+
+`collector_registry.csv` uses:
+
+| Status | Meaning |
+| --- | --- |
+| `implemented_verified` | Merged on the collector's `main`, with fresh-build, idempotency, revision and as-of gates passing. |
+| `planned` | Approved for implementation; the repository may not exist yet. |
+| `candidate` | Not approved. Licence, automatability or a machine-readable artifact is unproven. |
+| `blocked` | Attempted and stopped by a source, licence or access blocker. |
+
+`source_registry.csv` uses `implemented` / `not_implemented` for
+`automation_status`, and `unknown` wherever a fact has not been verified
+against the official source. `unknown` is never replaced by a guess.
 
 ## Migration state
 
