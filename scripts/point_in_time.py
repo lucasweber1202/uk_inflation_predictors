@@ -52,6 +52,16 @@ def get_predictor_as_of(
     return selected.reset_index(drop=True)
 
 
+def get_target_as_of(
+    observations: pd.DataFrame,
+    series_id: str,
+    as_of: str | pd.Timestamp,
+    mode: str = "strict",
+) -> pd.DataFrame:
+    """Select target vintages with the same fail-closed PIT contract as predictors."""
+    return get_predictor_as_of(observations, series_id, as_of, mode)
+
+
 def build_as_of_panel(
     observations: pd.DataFrame,
     as_of: str | pd.Timestamp,
