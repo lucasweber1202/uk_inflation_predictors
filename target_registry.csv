@@ -1,0 +1,14 @@
+target_key,target_repository,target_series_id,target_name,coicop,target_type,frequency,verified,notes
+headline,collector_ons_cpi,CPI_COICOP_ALL_D7BT,CPI all items,00,index,monthly,true,Verified from ONS Table 38 classification 0 and CDID D7BT.
+food,collector_ons_cpi,CPI_COICOP_G011_D7C8,Food,01.1,index,monthly,true,Verified from ONS Table 38 classification 01.1 and CDID D7C8.
+fruit,collector_ons_cpi,CPI_COICOP_C0116_D7DA,Fruit,01.1.6,index,monthly,true,Verified from ONS Table 38 classification 01.1.6 and CDID D7DA.
+vegetables,collector_ons_cpi,CPI_COICOP_C0117_D7DB,Vegetables including potatoes and tubers,01.1.7,index,monthly,true,Verified from ONS Table 38 classification 01.1.7 and CDID D7DB.
+milk_cheese_eggs,collector_ons_cpi,CPI_COICOP_C0114_D7D8,"Milk, cheese and eggs",01.1.4,index,monthly,true,Verified from ONS Table 38 classification 01.1.4 and CDID D7D8.
+energy,collector_ons_cpi,CPI_ALT_A13_DK9T,Energy ONS analytical aggregate,aggregate,index,monthly,true,Existing verified ONS analytical aggregate; distinct from an unresolved ad-hoc 04.5+07.2.2 mapping.
+electricity,collector_ons_cpi,CPI_COICOP_C0451_D7DT,Electricity,04.5.1,index,monthly,true,Verified from ONS Table 38 classification 04.5.1 and CDID D7DT.
+fuels,collector_ons_cpi,CPI_COICOP_C0722_D7EC,Fuels and lubricants,07.2.2,index,monthly,true,Verified from ONS Table 38 classification 07.2.2 and CDID D7EC.
+tobacco,collector_ons_cpi,CPI_COICOP_G022_D7CB,Tobacco,02.2,index,monthly,true,Verified from ONS Table 38 classification 02.2 and CDID D7CB.
+alcohol,collector_ons_cpi,CPI_COICOP_G021_D7CA,Alcoholic beverages,02.1,index,monthly,true,Verified from ONS Table 38 classification 02.1 and CDID D7CA.
+transport,collector_ons_cpi,CPI_COICOP_D07_D7C2,Transport,07,index,monthly,true,Verified from ONS Table 38 classification 07 and CDID D7C2.
+bus_fares,collector_ons_cpi,CPI_COICOP_C07326_D7EG,Passenger transport by road combined class,07.3.2/6,index,monthly,true,Verified existing combined-class alias in collector_ons_cpi.
+core_cpi,collector_ons_ex_cpi,EXCPI_INDEX_NATIVE_DKC6,"CPI excluding energy, food, alcohol and tobacco",aggregate,index,monthly,true,Verified native EX-CPI CDID DKC6; registered for optional robustness work.

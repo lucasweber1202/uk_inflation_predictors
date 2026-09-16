@@ -1,0 +1,14 @@
+target: CPI_COICOP_C0722_D7EC
+predictors:
+  - DESNZ_ROADFUEL_ULSP_PUMPPRICE
+  - DESNZ_ROADFUEL_ULSD_PUMPPRICE
+features: [monthly_mean, monthly_last, mom, yoy, mtd_mean, 7d_mean, 14d_mean, 21d_mean]
+cutoffs: [T-10, T-5, T-1]
+pit_modes: [strict, reconstructed]
+ar_orders: [1, 2, 3, 6, 12]
+predictor_lags: [0, 1, 2, 3]
+minimum_train_months: 60
+minimum_oos_predictions: 12
+max_nan_fraction: 0.35
+metadata:
+  experiment: DESNZ road fuels to fuels CPI
