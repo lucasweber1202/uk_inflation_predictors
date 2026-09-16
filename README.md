@@ -15,9 +15,16 @@ They own official CPI levels, classification, weights and target validation.
 
 ### Predictor collectors (X)
 
-- [`collector_desnz_uk`](https://github.com/lucasweber1202/collector_desnz_uk) — `desnz_road_fuels` (weekly, from 2003-06-09, 6 series).
-- [`collector_defra_uk`](https://github.com/lucasweber1202/collector_defra_uk) — `defra_fruit_veg`, `defra_banana_prices`, `defra_milk_prices`, `defra_agricultural_price_index` (266 series, 55,973 observations).
-- planned, repositories not yet created: `collector_ofgem_uk`, `collector_hmrc_uk`, `collector_elexon_uk`, `collector_dft_uk`, `collector_orr_uk`.
+| Repository | Data sets | Series |
+| --- | --- | --- |
+| [`collector_desnz_uk`](https://github.com/lucasweber1202/collector_desnz_uk) | `desnz_road_fuels` (weekly, 2003-06) | 6 |
+| [`collector_defra_uk`](https://github.com/lucasweber1202/collector_defra_uk) | `defra_fruit_veg`, `defra_banana_prices`, `defra_milk_prices`, `defra_agricultural_price_index` | 266 |
+| [`collector_dft_uk`](https://github.com/lucasweber1202/collector_dft_uk) | `dft_bus_fares` (quarterly, 2005-03) | 16 |
+| [`collector_hmrc_uk`](https://github.com/lucasweber1202/collector_hmrc_uk) | `hmrc_tobacco_bulletin`, `hmrc_alcohol_bulletin` (monthly) | 58 |
+| [`collector_elexon_uk`](https://github.com/lucasweber1202/collector_elexon_uk) | `elexon_market_index_prices` (half-hourly, 2016-09) | up to 200 |
+
+Blocked or not yet created: `collector_ofgem_uk` (blocked — no machine-readable
+artifact), `collector_orr_uk` (planned — fares tables unconfirmed).
 
 One repository per publisher, and the schema name equals the repository name. A
 new dataset from a publisher already in the fleet is added to that publisher's
@@ -66,6 +73,11 @@ prior registry entry. A collector is not coded until its fiche is complete.
 | `planned` | Approved for implementation; the repository may not exist yet. |
 | `candidate` | Not approved. Licence, automatability or a machine-readable artifact is unproven. |
 | `blocked` | Attempted and stopped by a source, licence or access blocker. |
+
+A data set inside an otherwise implemented repository can be blocked on its
+own: `collector_hmrc_uk` implements both bulletins while both duty-rate data
+sets stay blocked, and that repository contains no module for them rather than
+a stub.
 
 `source_registry.csv` uses `implemented` / `not_implemented` for
 `automation_status`, and `unknown` wherever a fact has not been verified

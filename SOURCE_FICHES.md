@@ -6,8 +6,10 @@ source until its fiche is complete; where a field is still unknown, that is
 recorded as unknown rather than guessed.
 
 Implemented sources are documented in their own repositories
-(`METHODOLOGY.md` and `POINT_IN_TIME.md` in `collector_desnz_uk` and
-`collector_defra_uk`).
+(`METHODOLOGY.md` and `POINT_IN_TIME.md` in `collector_desnz_uk`,
+`collector_defra_uk`, `collector_dft_uk`, `collector_hmrc_uk` and
+`collector_elexon_uk`). A fiche is removed from this file once its source is
+implemented; what remains below is the unimplemented set.
 
 ---
 
@@ -33,71 +35,19 @@ identified manually. This is the reason Phase 4 did not proceed to code.
 
 ---
 
-## `elexon_market_index_prices` — VIABLE
+## `hmrc_tobacco_duty_rates` / `hmrc_alcohol_duty_rates` — BLOCKED
+
+Re-investigated 2026-09-16. The live rate histories are published at:
+
+- `https://www.gov.uk/government/statistics/tobacco-bulletin/historical-tobacco-duty-rates`
+  — rates back to 1978, **2 HTML tables, no attachment**
+- `https://www.gov.uk/government/statistics/alcohol-bulletin/alcohol-bulletin-historic-duty-rates`
+  — **18 HTML tables, no attachment**
 
 | Field | Finding |
 | --- | --- |
-| PUBLISHER | Elexon (BMRS) |
-| DIRECT_ARTIFACTS | `https://data.elexon.co.uk/bmrs/api/v1/balancing/pricing/market-index?from=…&to=…&format=json` |
-| API | REST, JSON, **no authentication required** (verified) |
-| FORMAT | JSON |
-| FIELDS | `startTime`, `dataProvider`, `settlementDate`, `settlementPeriod`, `price`, `volume` |
-| SERIES | providers observed: `APXMIDP`, `N2EXMIDP`; measures: price, volume |
-| FREQUENCY | half-hourly (settlement periods) |
-| HISTORY_START | unknown — data returned for 2018-06 and 2021-06, **not** for 2015-01. Bisect before coding. |
-| SERIES_ID_RULE | `ELEXON_MID_{PROVIDER}_{PRICE\|VOLUME}_SP{NN}` |
-| REFERENCE_DATE_RULE | `reference_date = settlementDate` |
-| MISSING_VALUE_RULE | `N2EXMIDP` returned `price = 0.00` across the sampled window — characterise this before treating it as a real level or as missing |
-| LICENSE | **unknown — confirm before use** |
-
-`time_series.reference_date` is a `DATE`, so the settlement period is encoded in
-`series_id` rather than added as a column, exactly as the brief specifies. This
-is coherent with the current contract: the primary key stays
-`(series_id, reference_date, vintage_date)` and each settlement period becomes
-its own series. Settlement periods run 1–50 on clock-change days, so the
-identifier must be zero-padded to two digits and the 49/50 cases tested.
-Aggregation to daily, monthly or MTD belongs to `uk_inflation_predictors`.
-
----
-
-## `dft_bus_fares` (BUS0415) — VIABLE, and the old registry was wrong
-
-| Field | Finding |
-| --- | --- |
-| PUBLISHER | Department for Transport |
-| LANDING_PAGE | `https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables` |
-| DIRECT_ARTIFACTS | `bus0415.ods` (discovered on the page; the URL carries a content hash) |
-| FORMAT | ODS, two sheets: `BUS0415a` (current prices), `BUS0415b` (real terms) |
-| **FREQUENCY** | **quarterly** — Year/Month columns take only Mar, Jun, Sep, Dec. The prior registry said *annual*; that was **wrong**. |
-| HISTORY_START | 2005-03, base **March 2005 = 100**, 85 observations to 2026-03 |
-| SERIES | London, English metropolitan areas, English non-metropolitan areas, England, Scotland, Wales, Great Britain, England outside London |
-| SERIES_ID_RULE | encode the base year, as for the DEFRA index, so a rebasing creates new series |
-| **SCOPE WARNING** | `BUS0415a` also carries **RPI, CPI and CPIH comparator columns**. Those are ONS *target* data and must **not** be collected in a predictor repository — they belong to `collector_ons_cpi`. |
-
----
-
-## `hmrc_tobacco_bulletin` / `hmrc_alcohol_bulletin` — VIABLE
-
-| Field | Finding |
-| --- | --- |
-| PUBLISHER | HM Revenue & Customs |
-| DIRECT_ARTIFACTS | `Tobacco_Tab_Jul_26.ods`; `Alcohol_Tables_Jul26.ods` |
-| FORMAT | ODS on GOV.UK |
-| RELEASE_DATE_RULE | GOV.UK change history: **45** timestamps (tobacco), **48** (alcohol) |
-| FREQUENCY | monthly |
-| HISTORY_START | unknown — sheet layout and history still to be verified |
-
-Both are ordinary GOV.UK publication pages, so the existing `govuk.py` helper and
-the standard release-attribution path apply unchanged. These are **clearances and
-receipts**, i.e. activity data.
-
-## `hmrc_tobacco_duty_rates` / `hmrc_alcohol_duty_rates` — PARTIALLY BLOCKED
-
-| Field | Finding |
-| --- | --- |
-| LANDING_PAGE | `https://www.gov.uk/government/publications/rates-and-allowances-excise-duty-tobacco-duty`; `https://www.gov.uk/guidance/alcohol-duty-rates` (the previously registered alcohol URL 404s) |
-| DIRECT_ARTIFACTS | **None.** Rates are published as HTML tables with no CSV/ODS/XLSX attachment. |
-| RELEASE_DATE_RULE | 13 change-history timestamps on the tobacco page give announcement dates |
+| DIRECT_ARTIFACTS | **None.** Neither page carries a CSV, ODS or XLSX. |
+| RELEASE_DATE_RULE | GOV.UK change-history timestamps give announcement dates |
 
 A duty rate is a **tax parameter**, not activity data, and is usually announced
 ahead of the date it takes effect. `announcement_date`, `effective_date` and
@@ -118,3 +68,36 @@ decision to parse the HTML tables.
 
 The current table identifiers and a machine-readable artifact must be confirmed
 manually before any code is written.
+
+
+---
+
+## Resolved this round
+
+These fiches were completed and their sources implemented, so they no longer
+appear above:
+
+| Source | Outcome |
+| --- | --- |
+| `dft_bus_fares` | implemented in `collector_dft_uk` — quarterly, 2005-03, 16 series |
+| `hmrc_tobacco_bulletin` | implemented in `collector_hmrc_uk` — monthly, 1991-01, 10 series |
+| `hmrc_alcohol_bulletin` | implemented in `collector_hmrc_uk` — monthly, 2023-08, 48 series |
+| `elexon_market_index_prices` | implemented in `collector_elexon_uk` — half-hourly, 2016-09-12 |
+
+The three Elexon blockers recorded in the previous round were all resolved
+before any parser was written:
+
+- **Licence** — Elexon grants a worldwide, royalty-free, perpetual,
+  non-exclusive licence to copy, adapt and exploit BMRS data commercially,
+  subject to the attribution "Contains BMRS data © Elexon Limited copyright and
+  database right". Automation and historical storage are permitted.
+- **History start** — bisected to **2016-09-12** (partial day); the first full
+  day is 2016-09-13.
+- **The N2EXMIDP zeros** — the first hypothesis, that the provider is entirely
+  silent, was **wrong**. Sampling eleven days suggested it; the full history
+  disproved it. `N2EXMIDP` reports in 501 of 172,666 periods across 168
+  distinct dates, with real values from -65.8 to 450.23 GBP/MWh. The correct
+  rule is not provider exclusion but a placeholder rule: a row whose price
+  **and** volume are both exactly zero is a non-reporting placeholder and is
+  skipped, for either provider. Six rows in the full history carry a zero price
+  with a real volume and are genuine trades, so the conjunction matters.
