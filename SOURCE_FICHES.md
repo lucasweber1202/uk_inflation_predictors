@@ -9,48 +9,70 @@ Implemented sources are documented in their own repositories
 (`METHODOLOGY.md` and `POINT_IN_TIME.md` in `collector_desnz_uk`,
 `collector_defra_uk`, `collector_dft_uk`, `collector_hmrc_uk` and
 `collector_elexon_uk`). A fiche is removed from this file once its source is
-implemented; what remains below is the unimplemented set.
+implemented **and certified**; what remains below is the set that is not both.
+`brc_shop_price_monitor` and `cbi_economic_surveys` are implemented but not yet
+certified against a live vendor session, so their fiches stay here and record
+exactly what is still open.
 
 ---
 
-## `brc_shop_price_monitor` — BLOCKED_LICENSE
+## `brc_shop_price_monitor` — RESOLVED (environment-gated)
 
 | Field | Finding |
 | --- | --- |
 | PUBLISHER | British Retail Consortium (compiled with NIQ) |
 | LANDING_PAGE | `https://brc.org.uk/market-intelligence/publications/monitors/shop-price-monitor/` |
-| PUBLIC_VALUES | Monthly releases publish selected current headline YoY rates for all shop prices, food, fresh food, ambient food and non-food; some releases also show current and previous MoM values. |
-| LICENSED_PRODUCT | BRC's data-subscription page states that historical datasets and monthly Excel reports are subscription products. Redistribution requires separate terms. |
-| FREQUENCY / HISTORY | monthly / stated from 2005 |
-| RELEASE_RULE | approximately ten days before ONS CPI |
-| PIT | A public release could support only the values in that release from its publication date. It cannot establish an open reusable full history. |
+| DELIVERY_ROUTE | Bloomberg Terminal / LSEG Workspace, under the desk's own entitlement |
+| LICENSED_PRODUCT | BRC's historical datasets and monthly Excel reports remain subscription products. That is unchanged; what changed is that the desk holds a licensed route to the data. |
+| FREQUENCY / HISTORY | monthly / stated from 2005; the history a given provider actually carries is unconfirmed |
+| RELEASE_RULE | approximately ten days before ONS CPI, at 00:01 Europe/London |
+| PIT | A vendor backfill carries no publication timestamp, so history is `first_seen` at the collection instant and is never backdated. The release rule is stored as metadata and is never used as availability evidence. |
 
-**Blocker.** There is no open machine-readable historical artifact or API and
-the structured history is sold by subscription. Public news pages are useful
-evidence, but converting them into a stored historical dataset without explicit
-reuse permission would create both licence and drift risk. No
-`collector_brc_uk` repository or predictor mapping was created. A BRC licence
-covering automated retrieval, storage and the intended internal use would
-unlock implementation.
+**Resolved, with an environment gate.** The earlier blocker asserted that lawful
+collection was impossible. That conflated the publisher's licensing with the
+desk's access: BRC data is distributed through Bloomberg and LSEG, both of which
+the desk is licensed for, so the source is not economically blocked. No news
+page is scraped and no series is reconstructed from article text.
 
-## `cbi_economic_surveys` — BLOCKED_LICENSE
+`collector_brc_uk` is implemented: five canonical year-on-year series plus six
+optional MoM/index series defined, both provider adapters, canonical contract,
+point-in-time handling, vintages, idempotency and 79 offline tests that pass
+with no vendor library installed.
+
+**What is still open** is environment-bound only: entitlement confirmation, the
+vendor identifiers — every one of which ships as `PENDING_VENDOR_DISCOVERY`
+rather than a guess — and a live certification run. `LIVE_VENDOR_SMOKE = SKIP`,
+reason: no corporate terminal or session available. See
+`collector_brc_uk/VENDOR_INTEGRATION.md` for the runbook.
+
+## `cbi_economic_surveys` — RESOLVED (environment-gated)
 
 | Field | Finding |
 | --- | --- |
 | PUBLISHER | Confederation of British Industry |
 | LANDING_PAGE | `https://www.cbi.org.uk/economics/surveys/` |
-| SCOPE | Distributive Trades, Industrial Trends and Service Sector surveys; public releases contain selected sales, orders, prices, costs and expectations balances. |
-| PUBLIC_VALUES | Official articles publish selected current weighted balances, including expected selling/output prices and service price expectations. |
-| LICENSED_PRODUCT | CBI explicitly directs users to its economics team for licensing survey data and purchasing sector insights. |
-| FORMAT / API | public HTML releases; no stable open historical CSV, XLSX or JSON API verified |
-| PIT | Individual public releases can prove the disclosed balance from their publication date, but do not grant or supply a complete reusable history. |
+| DELIVERY_ROUTE | Bloomberg Terminal / LSEG Workspace, under the desk's own entitlement |
+| SCOPE | Distributive Trades (monthly), Industrial Trends (monthly), Service Sector (quarterly). 27 canonical series covering the price and cost side plus the demand context needed to read it. |
+| LICENSED_PRODUCT | CBI licenses its survey data directly. That is unchanged; what changed is that the desk holds a licensed route to it. |
+| FORMAT / API | vendor API (`blpapi` / `lseg.data`); no open historical CSV, XLSX or JSON API |
+| PIT | A vendor backfill carries no publication timestamp, so history is `first_seen` at the collection instant and is never backdated. |
 
-**Blocker.** The economically useful structured histories are licensed and no
-open machine-readable archive with storage permission was found. Scraping news
-articles would be a brittle partial reconstruction and is not a substitute for
-a data licence. No `collector_cbi_uk` repository or predictor mapping was
-created. A CBI data licence covering the required surveys, history and
-automated storage would unlock implementation.
+**Resolved, with an environment gate**, on the same grounds as `brc`.
+
+`collector_cbi_uk` is implemented. Four dimensions are stored as columns and
+never collapsed — `survey`, `sector`, `measure` (current vs expected) and
+`stance` — because merging a current and an expected balance would build a
+look-ahead into the data model that no downstream point-in-time machinery could
+undo, and because "CBI selling prices" is three different series from three
+different surveys. Capacity utilisation is excluded as a capacity rather than a
+price measure. 89 offline tests pass with no vendor library installed.
+
+**What is still open** is environment-bound only: entitlement, the vendor
+identifiers — all 54 cells ship as `PENDING_VENDOR_DISCOVERY` — and a live
+certification run. `LIVE_VENDOR_SMOKE = SKIP`, reason: no corporate terminal or
+session available. The quarterly Service Sector history is the least certain of
+the three and stays pending rather than being stitched if a provider's history
+turns out to be discontinuous. See `collector_cbi_uk/VENDOR_INTEGRATION.md`.
 
 ## `ofgem_energy_price_cap` — RESOLVED
 

@@ -137,18 +137,55 @@ prior registry entry. A collector is not coded until its fiche is complete.
 | `planned` | Approved for implementation; the repository may not exist yet. |
 | `candidate` | Not approved. Licence, automatability or a machine-readable artifact is unproven. |
 | `blocked` | Attempted and stopped by a source, licence or access blocker. |
-| `blocked_license` | A technically relevant source exists, but lawful historical collection/storage requires a commercial licence or explicit permission. No collector repository is created. |
+| `blocked_license` | A technically relevant source exists, but lawful historical collection/storage requires a commercial licence or explicit permission, and no licensed route to it is available. No collector repository is created. |
+| `ready_with_environment_gate` | The collector repository exists and is architecturally complete, standalone, offline-tested, point-in-time safe and idempotent. The only remaining blocker is environment-bound: a corporate entitlement, the vendor identifiers that can only be confirmed inside it, and a live certification run. |
 
 A data set inside an otherwise implemented repository can be blocked on its
 own: `collector_hmrc_uk` implements both bulletins while both duty-rate data
 sets stay blocked, and that repository contains no module for them rather than
 a stub.
 
-`source_registry.csv` uses `implemented`, `not_implemented`, `blocked` and
-`blocked_license` for `automation_status`, and `unknown` wherever a fact has
-not been verified against the official source. `unknown` is never replaced by
-a guess. A source blocked by licence has no `predictor_map.csv` row because no
-persisted data contract exists yet.
+`ready_with_environment_gate` exists because `blocked_license` turned out to be
+too coarse. It bundled six separable facts, and `collector_brc_uk` and
+`collector_cbi_uk` sit differently on each:
+
+| Term | brc / cbi |
+| --- | --- |
+| `SOURCE_EXISTS` — the publisher publishes the statistic | yes |
+| `VENDOR_AVAILABLE` — a licensed delivery provider is available to the desk | yes, Bloomberg and/or LSEG |
+| `ENTITLEMENT_UNKNOWN` — whether the account may read it is unverified | **open** |
+| `VENDOR_SERIES_ID_UNKNOWN` — vendor identifiers are unconfirmed | **open** |
+| `IMPLEMENTATION_READY` — code, schema, tests and PIT handling complete | yes |
+| `LIVE_CERTIFICATION_PENDING` — no live vendor query has run | **open** |
+
+The earlier status asserted that lawful collection was impossible, which
+conflated the *publisher's* licensing with the *desk's* access. BRC and CBI data
+are licensed, and the desk holds licensed routes to them, so the source is not
+economically blocked. What is genuinely unresolved is environmental. Neither
+repository may move to `implemented_verified` until a real query has run against
+a real provider; `pending_vendor_entitlement` is the status to use instead if
+entitlement is ever established to be absent.
+
+Data reaching the fleet through a delivery provider does not change who the
+publisher is. `metadata.original_publisher` names BRC or CBI, and the provider
+is recorded per observation in `delivery_provider` / `vendor_series_id`. There
+is no `collector_bloomberg_uk` and no `collector_reuters_uk`: a collector is
+named for a publisher, and a vendor is a route.
+
+`source_registry.csv` uses `implemented`, `not_implemented`, `blocked`,
+`blocked_license` and `ready_with_environment_gate` for `automation_status`, and
+`unknown` wherever a fact has not been verified against the official source.
+`unknown` is never replaced by a guess. A source blocked by licence has no
+`predictor_map.csv` row because no persisted data contract exists yet; a source
+that is `ready_with_environment_gate` does have rows, because the contract
+exists, but every one of them carries `research_status=not_started` and
+`point_in_time_quality=first_seen` until the collector has actually run.
+
+The same rule applies to vendor identifiers. A Bloomberg ticker, a field
+mnemonic or an LSEG RIC that has not been confirmed inside an entitled session
+is recorded as the literal sentinel `PENDING_VENDOR_DISCOVERY`, never as a
+plausible guess: a wrong identifier either fails loudly or resolves to a
+different statistic and silently poisons the stored history.
 
 ## Migration state
 

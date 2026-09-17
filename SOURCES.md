@@ -119,17 +119,28 @@ FX and DMP. Their detailed source semantics live in each collector's
 whose source smoke, fresh-build, idempotency, revision, snapshot and as-of
 tests have passed. A PR or branch alone is not enough.
 
-## Licence-blocked sources
+## Licensed sources reached through a delivery provider
 
-| source_id | Publicly usable evidence | Blocker |
+Both sources below are licensed by their publisher and have no open
+machine-readable archive. Neither is economically blocked, because the desk
+holds a licensed route to them: Bloomberg Terminal and/or LSEG Workspace. The
+publisher remains the publisher — `metadata.original_publisher` names BRC or
+CBI, and the delivery provider is recorded per observation. Nothing is scraped
+from a news page and no series is reconstructed from article text.
+
+| source_id | What is collected | Remaining gate |
 |---|---|---|
-| `brc_shop_price_monitor` | Monthly BRC releases disclose selected current overall, food, fresh-food, ambient-food and non-food rates. | Historical data and monthly Excel reports are subscription products; redistribution requires separate terms. |
-| `cbi_economic_surveys` | CBI releases disclose selected current percentage balances for Distributive Trades, Industrial Trends and Services. | CBI licenses survey data; no stable open historical file/API or storage permission was found. |
+| `brc_shop_price_monitor` | Overall, food, fresh-food, ambient-food and non-food shop-price rates, obtained through a licensed delivery provider (Bloomberg/LSEG) rather than a public release. | Implemented in `collector_brc_uk`; the remaining gate is entitlement, vendor identifier discovery and live certification. Redistribution remains out of scope. |
+| `cbi_economic_surveys` | Distributive Trades, Industrial Trends and Service Sector balances, obtained through a licensed delivery provider (Bloomberg/LSEG) rather than a public release. | Implemented in `collector_cbi_uk`; the remaining gate is entitlement, vendor identifier discovery and live certification. Redistribution remains out of scope. |
 
-Neither source has a collector repository or `predictor_map.csv` entry. This is
-intentional: public narrative releases are not being misrepresented as an open,
-reproducible historical contract. `SOURCE_FICHES.md` records the exact evidence
-and what licence would unlock implementation.
+Both now have a collector repository and `predictor_map.csv` entries. Those
+entries are hypotheses about the economic channel: every one carries
+`research_status=not_started` and `point_in_time_quality=first_seen` until a
+live vendor query has actually run. No vendor identifier is recorded until it
+has been confirmed inside an entitled session; unconfirmed cells hold the
+literal sentinel `PENDING_VENDOR_DISCOVERY`. `SOURCE_FICHES.md` records what is
+still open for each, and each repository's `VENDOR_INTEGRATION.md` is the
+corporate-machine runbook.
 
 ## Other unimplemented or dataset-level blockers
 
@@ -138,4 +149,5 @@ and what licence would unlock implementation.
 - Ofcom, Auto Trader and commercial rental feeds remain candidates pending an
   automatable licensed artifact.
 - Scraping rental portals, retailers or commercial survey pages is out of
-  scope.
+  scope. Obtaining a licensed publisher's data through a delivery provider the
+  desk is entitled to is not scraping and is the route used for BRC and CBI.
