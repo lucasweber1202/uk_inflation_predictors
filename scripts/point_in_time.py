@@ -8,7 +8,9 @@ import pandas as pd
 
 STRICT_BASES = frozenset({"official_timestamp", "official_date", "archived_release", "first_seen"})
 RECONSTRUCTED_BASES = STRICT_BASES | {"inferred"}
-REQUIRED = frozenset({"series_id", "reference_date", "vintage_date", "value", "available_at", "availability_basis"})
+REQUIRED = frozenset(
+    {"series_id", "reference_date", "vintage_date", "value", "available_at", "availability_basis"}
+)
 
 
 def _normalise(frame: pd.DataFrame) -> pd.DataFrame:
@@ -50,6 +52,16 @@ def get_predictor_as_of(
     if (selected["available_at"] > cutoff).any():
         raise AssertionError("Future availability leaked through PIT selection")
     return selected.reset_index(drop=True)
+
+
+def get_target_as_of(
+    observations: pd.DataFrame,
+    series_id: str,
+    as_of: str | pd.Timestamp,
+    mode: str = "strict",
+) -> pd.DataFrame:
+    """Select target vintages with the same fail-closed rules as predictors."""
+    return get_predictor_as_of(observations, series_id, as_of, mode)
 
 
 def build_as_of_panel(

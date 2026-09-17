@@ -7,7 +7,11 @@ from scripts.features import aggregate_monthly, mtd_feature, trailing_feature, t
 
 def frame() -> pd.DataFrame:
     return pd.DataFrame(
-        {"series_id": ["X"] * 4, "reference_date": ["2025-04-01", "2025-04-08", "2025-04-14", "2025-05-01"], "value": [1.0, 3.0, 100.0, 5.0]}
+        {
+            "series_id": ["X"] * 4,
+            "reference_date": ["2025-04-01", "2025-04-08", "2025-04-14", "2025-05-01"],
+            "value": [1.0, 3.0, 100.0, 5.0],
+        }
     )
 
 

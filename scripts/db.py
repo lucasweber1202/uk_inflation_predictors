@@ -16,7 +16,9 @@ def _safe_identifier(value: str) -> str:
     return value
 
 
-def load_predictor_contract(engine: Engine, schema: str, series_ids: tuple[str, ...] = ()) -> pd.DataFrame:
+def load_predictor_contract(
+    engine: Engine, schema: str, series_ids: tuple[str, ...] = ()
+) -> pd.DataFrame:
     """Join time_series to availability using the fleet's persisted data contract."""
     schema = _safe_identifier(schema)
     where = ""

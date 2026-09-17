@@ -13,7 +13,14 @@ def sample() -> pd.DataFrame:
             ["X", "2025-02-01", "2025-02-03", 2.0, "2025-02-03", "inferred"],
             ["X", "2025-03-01", "2025-04-01", 3.0, "2025-04-01", "official_timestamp"],
         ],
-        columns=["series_id", "reference_date", "vintage_date", "value", "available_at", "availability_basis"],
+        columns=[
+            "series_id",
+            "reference_date",
+            "vintage_date",
+            "value",
+            "available_at",
+            "availability_basis",
+        ],
     )
 
 

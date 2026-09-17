@@ -10,6 +10,9 @@
 For each `(series_id, reference_date)`, selection first removes rows whose
 `available_at` exceeds the forecast instant and then selects the latest
 remaining vintage. Reversing those operations would leak a future revision.
+The identical selector is applied to target vintages before constructing AR
+lags. A target revision published between two origins can affect the later
+origin but cannot rewrite the earlier forecast.
 
 ## Feature safety
 
@@ -30,3 +33,6 @@ The suite contains adversarial rows for a future reference period, a future
 vintage, a future revision of an old period, and an inferred historical row.
 It also checks MTD and trailing windows at a mid-month cutoff. These tests are
 intended to fail if filtering and vintage ranking are accidentally reordered.
+An integrated origin-runner test adds both a target revision and predictor
+revision between origins and proves that the already-issued forecast is
+unchanged.

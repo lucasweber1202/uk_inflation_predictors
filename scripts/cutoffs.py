@@ -14,13 +14,19 @@ def release_calendar(target_vintages: pd.DataFrame) -> pd.Series:
     if "reference_date" not in target_vintages:
         raise ValueError("target vintages require reference_date")
     release_column = next(
-        (name for name in ("available_at", "release_at", "collected_at", "vintage_date") if name in target_vintages),
+        (
+            name
+            for name in ("available_at", "release_at", "collected_at", "vintage_date")
+            if name in target_vintages
+        ),
         None,
     )
     if release_column is None:
         raise ValueError("No persisted target release timestamp is available")
     frame = target_vintages.copy()
-    frame["reference_date"] = pd.to_datetime(frame["reference_date"]).dt.to_period("M").dt.to_timestamp()
+    frame["reference_date"] = (
+        pd.to_datetime(frame["reference_date"]).dt.to_period("M").dt.to_timestamp()
+    )
     frame[release_column] = pd.to_datetime(frame[release_column], utc=True)
     releases = frame.groupby("reference_date")[release_column].min().sort_index()
     if releases.index.duplicated().any() or releases.isna().any():

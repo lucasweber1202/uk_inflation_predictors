@@ -2,6 +2,9 @@
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["scripts*"]
+
 [project]
 name = "uk-inflation-predictors"
 version = "0.1.0"
@@ -21,10 +24,15 @@ line-length = 100
 target-version = "py311"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 files = ["scripts", "tests"]
 explicit_package_bases = true
 mypy_path = "."
 no_implicit_optional = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
+no_site_packages = true
+
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"

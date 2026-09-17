@@ -42,7 +42,9 @@ def expanding_forecast(
     return pd.Series(forecasts, name="forecast", dtype=float)
 
 
-def benchmark_forecasts(target: pd.Series, minimum_train_months: int, ar_orders: tuple[int, ...] = (1, 2, 3, 6, 12)) -> dict[str, pd.Series]:
+def benchmark_forecasts(
+    target: pd.Series, minimum_train_months: int, ar_orders: tuple[int, ...] = (1, 2, 3, 6, 12)
+) -> dict[str, pd.Series]:
     ordered = target.dropna().sort_index()
     forecasts: dict[str, pd.Series] = {}
     index = ordered.index[minimum_train_months:]

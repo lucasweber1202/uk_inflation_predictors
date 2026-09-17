@@ -35,7 +35,9 @@ def aggregate_monthly(frame: pd.DataFrame, statistic: str) -> pd.Series:
     return result.sort_index()
 
 
-def trailing_feature(frame: pd.DataFrame, as_of: str | pd.Timestamp, days: int, statistic: str = "mean") -> float:
+def trailing_feature(
+    frame: pd.DataFrame, as_of: str | pd.Timestamp, days: int, statistic: str = "mean"
+) -> float:
     if days not in {7, 14, 21}:
         raise ValueError("Trailing window must be 7, 14 or 21 days")
     values = _series(frame)
@@ -63,8 +65,57 @@ def mtd_feature(frame: pd.DataFrame, as_of: str | pd.Timestamp, statistic: str =
 def transformations(level: pd.Series) -> pd.DataFrame:
     level = level.sort_index().astype(float)
     return pd.DataFrame(
-        {"level": level, "difference": level.diff(), "mom": level.pct_change(), "yoy": level.pct_change(12)}
+        {
+            "level": level,
+            "difference": level.diff(),
+            "mom": level.pct_change(),
+            "yoy": level.pct_change(12),
+        }
     ).replace([np.inf, -np.inf], np.nan)
+
+
+def feature_series_as_of(
+    frame: pd.DataFrame,
+    as_of: str | pd.Timestamp,
+    feature: str,
+    forecast_month: str | pd.Timestamp,
+) -> pd.Series:
+    """Build a monthly feature using only rows already selected at one origin."""
+    if frame.empty:
+        return pd.Series(dtype=float)
+    cutoff = pd.Timestamp(as_of)
+    cutoff = cutoff.tz_localize(None) if cutoff.tzinfo is not None else cutoff
+    month = pd.Timestamp(forecast_month).to_period("M").to_timestamp()
+    if feature in {"mom", "yoy"}:
+        base = aggregate_monthly(frame, "monthly_mean")
+        return transformations(base)[feature]
+    if feature.startswith("monthly_"):
+        return aggregate_monthly(frame, feature)
+
+    values = _series(frame)
+    months = pd.period_range(values.index.min().to_period("M"), month.to_period("M"), freq="M")
+    result: dict[pd.Timestamp, float] = {}
+    for period in months:
+        anchor = (
+            min(period.end_time.normalize(), cutoff)
+            if period == month.to_period("M")
+            else period.end_time.normalize()
+        )
+        if feature in {"mtd_mean", "mtd_last"}:
+            start = period.start_time
+            window = values[(values.index >= start) & (values.index <= anchor)]
+            statistic = feature.removeprefix("mtd_")
+        else:
+            days = int(feature.split("d_", maxsplit=1)[0])
+            window = values[
+                (values.index <= anchor) & (values.index > anchor - pd.Timedelta(days=days))
+            ]
+            statistic = "mean"
+        if not window.empty:
+            result[period.to_timestamp()] = float(
+                window.mean() if statistic == "mean" else window.iloc[-1]
+            )
+    return pd.Series(result, dtype=float).sort_index()
 
 
 def elexon_provider_daily(frame: pd.DataFrame, weighted: bool = False) -> pd.DataFrame:
@@ -76,7 +127,12 @@ def elexon_provider_daily(frame: pd.DataFrame, weighted: bool = False) -> pd.Dat
     volumes = frame[frame["measure"] == "VOLUME"].copy()
     keys = ["provider", "reference_date", "settlement_period"]
     if weighted:
-        joined = prices.merge(volumes[keys + ["value"]], on=keys, suffixes=("_price", "_volume"), validate="one_to_one")
+        joined = prices.merge(
+            volumes[keys + ["value"]],
+            on=keys,
+            suffixes=("_price", "_volume"),
+            validate="one_to_one",
+        )
         if (joined["value_volume"] < 0).any():
             raise ValueError("Negative Elexon volume cannot be used as a weight")
         joined["weighted"] = joined["value_price"] * joined["value_volume"]
@@ -85,4 +141,6 @@ def elexon_provider_daily(frame: pd.DataFrame, weighted: bool = False) -> pd.Dat
         result["price"] = result["weighted_sum"] / result["volume"].replace(0, np.nan)
         return result.reset_index()[["provider", "reference_date", "price"]]
     grouped = prices.groupby(["provider", "reference_date"])["value"]
-    return grouped.agg(price="mean", median="median", minimum="min", maximum="max", volatility="std").reset_index()
+    return grouped.agg(
+        price="mean", median="median", minimum="min", maximum="max", volatility="std"
+    ).reset_index()
