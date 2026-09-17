@@ -22,9 +22,14 @@ They own official CPI levels, classification, weights and target validation.
 | [`collector_dft_uk`](https://github.com/lucasweber1202/collector_dft_uk) | `dft_bus_fares` (quarterly, 2005-03) | 16 |
 | [`collector_hmrc_uk`](https://github.com/lucasweber1202/collector_hmrc_uk) | `hmrc_tobacco_bulletin`, `hmrc_alcohol_bulletin` (monthly) | 58 |
 | [`collector_elexon_uk`](https://github.com/lucasweber1202/collector_elexon_uk) | `elexon_market_index_prices` (half-hourly, 2016-09) | up to 200 |
-
-Blocked or not yet created: `collector_ofgem_uk` (blocked — no machine-readable
-artifact), `collector_orr_uk` (planned — fares tables unconfirmed).
+| [`collector_ofgem_uk`](https://github.com/lucasweber1202/collector_ofgem_uk) | Ofgem final levelised price-cap rates | 352 |
+| [`collector_orr_uk`](https://github.com/lucasweber1202/collector_orr_uk) | ORR rail-fare tables 7180/7182 | 54 |
+| [`collector_ons_business_prices_uk`](https://github.com/lucasweber1202/collector_ons_business_prices_uk) | ONS PPI and SPPI | 27 |
+| [`collector_boe_fx_uk`](https://github.com/lucasweber1202/collector_boe_fx_uk) | Sterling ERI, GBP/USD and GBP/EUR | 3 |
+| [`collector_ons_awe_uk`](https://github.com/lucasweber1202/collector_ons_awe_uk) | ONS Average Weekly Earnings | 16 |
+| [`collector_boe_dmp_uk`](https://github.com/lucasweber1202/collector_boe_dmp_uk) | BoE Decision Maker Panel aggregates | 11 |
+| [`collector_ons_bics_uk`](https://github.com/lucasweber1202/collector_ons_bics_uk) | ONS BICS selected wave-aware series | 140 |
+| [`collector_ons_housing_uk`](https://github.com/lucasweber1202/collector_ons_housing_uk) | ONS private-rent successor data | 45 |
 
 One repository per publisher, and the schema name equals the repository name. A
 new dataset from a publisher already in the fleet is added to that publisher's
@@ -59,7 +64,7 @@ The supported path is:
 ```text
 persisted raw predictor
 → strict/reconstructed PIT filter
-→ as-of panel
+→ per-forecast-origin target and predictor reconstruction
 → frequency-aware feature
 → official target release cutoff
 → monthly target alignment
@@ -86,11 +91,13 @@ python -m scripts.experiments \
   --config configs/first_battery.yml \
   --target-csv target_vintages.csv \
   --predictor-csv predictor_contract.csv \
-  --as-of 2026-09-10T23:59:59Z \
   --output results/desnz_fuels.csv
 ```
 
-The CLI also writes a JSON run manifest beside the ranking CSV. Inputs must
+The optional `--as-of` argument is only a ceiling for reproducibility; it is
+never used as a single global historical information set. The CLI writes
+per-origin forecast rows, a `*_summary.csv` grouped without mixing PIT modes,
+and a JSON run manifest. Inputs must
 carry their vintages and availability evidence. The checked-in repository does
 not contain production databases or large raw snapshots, so empirical rankings
 are generated only in an environment with those data contracts available.
@@ -100,7 +107,9 @@ Quality gates:
 ```bash
 pytest -q
 ruff check .
+ruff format --check .
 mypy scripts tests
+python -m compileall -q .
 ```
 
 ## Non-negotiable research rule
@@ -128,15 +137,18 @@ prior registry entry. A collector is not coded until its fiche is complete.
 | `planned` | Approved for implementation; the repository may not exist yet. |
 | `candidate` | Not approved. Licence, automatability or a machine-readable artifact is unproven. |
 | `blocked` | Attempted and stopped by a source, licence or access blocker. |
+| `blocked_license` | A technically relevant source exists, but lawful historical collection/storage requires a commercial licence or explicit permission. No collector repository is created. |
 
 A data set inside an otherwise implemented repository can be blocked on its
 own: `collector_hmrc_uk` implements both bulletins while both duty-rate data
 sets stay blocked, and that repository contains no module for them rather than
 a stub.
 
-`source_registry.csv` uses `implemented` / `not_implemented` for
-`automation_status`, and `unknown` wherever a fact has not been verified
-against the official source. `unknown` is never replaced by a guess.
+`source_registry.csv` uses `implemented`, `not_implemented`, `blocked` and
+`blocked_license` for `automation_status`, and `unknown` wherever a fact has
+not been verified against the official source. `unknown` is never replaced by
+a guess. A source blocked by licence has no `predictor_map.csv` row because no
+persisted data contract exists yet.
 
 ## Migration state
 

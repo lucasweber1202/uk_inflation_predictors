@@ -16,4 +16,8 @@ def test_target_registry_is_unique_and_verified() -> None:
 def test_pending_target_fails_closed() -> None:
     index = pd.date_range("2020-01-01", periods=30, freq="MS")
     with pytest.raises(ValueError, match="Unresolved"):
-        validate_model_inputs(pd.Series(range(30), index=index), pd.Series(range(30), index=index), target_series_id="PENDING_VERIFICATION")
+        validate_model_inputs(
+            pd.Series(range(30), index=index),
+            pd.Series(range(30), index=index),
+            target_series_id="PENDING_VERIFICATION",
+        )

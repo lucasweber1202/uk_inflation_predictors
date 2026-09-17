@@ -19,7 +19,11 @@ For target month `m`, the forecast instant is the first persisted official CPI
 release timestamp for `m` less 10, 5 or 1 calendar days. This creates T-10,
 T-5 and T-1 information sets without inventing a fixed day of month. The
 feature builder first filters raw vintages at that instant and only then
-aggregates them.
+aggregates them. The runner repeats this reconstruction independently for every
+target month; it never reconstructs the full history using one modern as-of
+date. Lagged CPI values used by AR models are selected from target vintages
+that were available at the same forecast instant. Evaluation actuals use the
+target's first release rather than a later revised vintage.
 
 ## Features
 

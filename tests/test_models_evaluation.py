@@ -21,6 +21,8 @@ def test_benchmarks_and_metrics() -> None:
     index = pd.date_range("2010-01-01", periods=90, freq="MS")
     target = pd.Series(np.cos(np.arange(90) / 5), index=index)
     forecasts = benchmark_forecasts(target, 36, (1, 2, 3, 6, 12))
-    assert {"historical_mean", "last_observation", "AR1", "AR2", "AR3", "AR6", "AR12"} == set(forecasts)
+    assert {"historical_mean", "last_observation", "AR1", "AR2", "AR3", "AR6", "AR12"} == set(
+        forecasts
+    )
     result = metrics(target, forecasts["AR1"])
     assert result["n_predictions"] > 0 and result["rmse"] >= 0

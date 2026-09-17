@@ -6,7 +6,9 @@ import numpy as np
 import pandas as pd
 
 
-def design_matrix(target: pd.Series, ar_order: int, predictor: pd.Series | None = None, predictor_lag: int = 0) -> tuple[pd.DataFrame, pd.Series]:
+def design_matrix(
+    target: pd.Series, ar_order: int, predictor: pd.Series | None = None, predictor_lag: int = 0
+) -> tuple[pd.DataFrame, pd.Series]:
     if ar_order < 0 or predictor_lag < 0:
         raise ValueError("Lags cannot be negative")
     data = pd.DataFrame({"target": target.astype(float)})

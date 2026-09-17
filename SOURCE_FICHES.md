@@ -1,6 +1,6 @@
 # Verified source fiches for unimplemented predictor sources
 
-Every fiche below was filled from the **live** source on **2026-09-16**, not from
+Every fiche below was filled from the **live** source, most recently on **2026-09-17**, not from
 the prior registry and not from memory. A collector must not be coded for a
 source until its fiche is complete; where a field is still unknown, that is
 recorded as unknown rather than guessed.
@@ -13,7 +13,46 @@ implemented; what remains below is the unimplemented set.
 
 ---
 
-## `ofgem_energy_price_cap` — BLOCKED
+## `brc_shop_price_monitor` — BLOCKED_LICENSE
+
+| Field | Finding |
+| --- | --- |
+| PUBLISHER | British Retail Consortium (compiled with NIQ) |
+| LANDING_PAGE | `https://brc.org.uk/market-intelligence/publications/monitors/shop-price-monitor/` |
+| PUBLIC_VALUES | Monthly releases publish selected current headline YoY rates for all shop prices, food, fresh food, ambient food and non-food; some releases also show current and previous MoM values. |
+| LICENSED_PRODUCT | BRC's data-subscription page states that historical datasets and monthly Excel reports are subscription products. Redistribution requires separate terms. |
+| FREQUENCY / HISTORY | monthly / stated from 2005 |
+| RELEASE_RULE | approximately ten days before ONS CPI |
+| PIT | A public release could support only the values in that release from its publication date. It cannot establish an open reusable full history. |
+
+**Blocker.** There is no open machine-readable historical artifact or API and
+the structured history is sold by subscription. Public news pages are useful
+evidence, but converting them into a stored historical dataset without explicit
+reuse permission would create both licence and drift risk. No
+`collector_brc_uk` repository or predictor mapping was created. A BRC licence
+covering automated retrieval, storage and the intended internal use would
+unlock implementation.
+
+## `cbi_economic_surveys` — BLOCKED_LICENSE
+
+| Field | Finding |
+| --- | --- |
+| PUBLISHER | Confederation of British Industry |
+| LANDING_PAGE | `https://www.cbi.org.uk/economics/surveys/` |
+| SCOPE | Distributive Trades, Industrial Trends and Service Sector surveys; public releases contain selected sales, orders, prices, costs and expectations balances. |
+| PUBLIC_VALUES | Official articles publish selected current weighted balances, including expected selling/output prices and service price expectations. |
+| LICENSED_PRODUCT | CBI explicitly directs users to its economics team for licensing survey data and purchasing sector insights. |
+| FORMAT / API | public HTML releases; no stable open historical CSV, XLSX or JSON API verified |
+| PIT | Individual public releases can prove the disclosed balance from their publication date, but do not grant or supply a complete reusable history. |
+
+**Blocker.** The economically useful structured histories are licensed and no
+open machine-readable archive with storage permission was found. Scraping news
+articles would be a brittle partial reconstruction and is not a substitute for
+a data licence. No `collector_cbi_uk` repository or predictor mapping was
+created. A CBI data licence covering the required surveys, history and
+automated storage would unlock implementation.
+
+## `ofgem_energy_price_cap` — RESOLVED
 
 | Field | Finding |
 | --- | --- |
@@ -28,10 +67,10 @@ implemented; what remains below is the unimplemented set.
 | AVAILABLE_AT_RULE | **must** be the announcement instant, never the effective date |
 | EFFECTIVE_DATE_RULE | `reference_date` = first day of the cap period; the cap is knowable well before it |
 
-**Blocker.** The Ofgem data portal and site search return no cap dataset, and the
-site is in BETA. Building an HTML scraper is explicitly out of scope, so this
-source stays blocked until an official machine-readable artifact or API is
-identified manually. This is the reason Phase 4 did not proceed to code.
+The earlier blocker was resolved by locating the official Annex 9 final
+levelised cap-rates XLSX. It is implemented on `collector_ofgem_uk` main. The
+collector preserves announcement availability separately from effective cap
+periods and marks unproven historical publication times `first_seen`.
 
 ---
 
@@ -57,7 +96,7 @@ decision to parse the HTML tables.
 
 ---
 
-## `orr_rail_fares_index` — UNVERIFIED
+## `orr_rail_fares_index` — RESOLVED
 
 | Field | Finding |
 | --- | --- |
@@ -66,8 +105,9 @@ decision to parse the HTML tables.
 | FREQUENCY | unknown |
 | SCOPE | fares only — regulated, unregulated, ticket type, overall. Passenger usage is a different series and is out of scope even though it sits in the same portal area. |
 
-The current table identifiers and a machine-readable artifact must be confirmed
-manually before any code is written.
+Official ODS tables 7180 and 7182 were found and are implemented on
+`collector_orr_uk` main. They supply 54 annual series and 1,348 observations
+from 1995 through 2026 without HTML scraping.
 
 
 ---

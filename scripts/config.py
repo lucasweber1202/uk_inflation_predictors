@@ -9,6 +9,22 @@ import yaml
 
 PIT_MODES = frozenset({"strict", "reconstructed"})
 CUTOFFS = frozenset({"T-10", "T-5", "T-1"})
+FEATURES = frozenset(
+    {
+        "monthly_mean",
+        "monthly_last",
+        "monthly_median",
+        "monthly_min",
+        "monthly_max",
+        "mom",
+        "yoy",
+        "mtd_mean",
+        "mtd_last",
+        "7d_mean",
+        "14d_mean",
+        "21d_mean",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -32,8 +48,11 @@ class ExperimentConfig:
             raise ValueError("At least one predictor is required")
         unknown_modes = set(self.pit_modes) - PIT_MODES
         unknown_cutoffs = set(self.cutoffs) - CUTOFFS
+        unknown_features = set(self.features) - FEATURES
         if unknown_modes or unknown_cutoffs:
             raise ValueError(f"Unknown modes/cutoffs: {unknown_modes or unknown_cutoffs}")
+        if unknown_features:
+            raise ValueError(f"Unsupported feature: {min(unknown_features)}")
         if self.minimum_train_months < 12 or self.minimum_oos_predictions < 1:
             raise ValueError("Sample thresholds are too small")
         if not 0 <= self.max_nan_fraction < 1:

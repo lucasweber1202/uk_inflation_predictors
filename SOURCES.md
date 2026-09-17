@@ -105,26 +105,37 @@ revision policy on this page.
 
 ---
 
-## Registered, not implemented
+## Current implementation state
 
-Twelve further candidates are catalogued in `source_registry.csv` with
-`automation_status=not_implemented`. Their URLs were checked to be reachable
-where possible; everything unconfirmed is `unknown`.
+The machine-readable registry is authoritative for the complete list. As of
+2026-09-17, the following source families are implemented on their standalone
+collector `main` branches: DESNZ road fuels; four DEFRA datasets; DfT bus
+fares; HMRC tobacco and alcohol bulletins; Elexon market-index prices; Ofgem
+price-cap rates; ORR rail fares; ONS PPI/SPPI, AWE, BICS and private rents; BoE
+FX and DMP. Their detailed source semantics live in each collector's
+`METHODOLOGY.md` and `POINT_IN_TIME.md`.
 
-| source_id | Status of verification |
-|---|---|
-| `ofgem_energy_price_cap` | URL confirmed after redirect. Format, history and licence unverified. Announcement vs effective date is the key point-in-time problem. |
-| `defra_banana_prices` | URL confirmed (HTTP 200), OGL v3.0. Layout, cadence, history unverified. |
-| `hmrc_tobacco_duty` | Tobacco Bulletin URL confirmed, OGL v3.0. Layout and history unverified. |
-| `hmrc_alcohol_duty` | Alcohol Bulletin URL confirmed, OGL v3.0. Layout and history unverified. |
-| `defra_milk_prices` | Original guessed URL 404'd; corrected via the GOV.UK search API to the confirmed statistics page. Layout unverified. |
-| `defra_agricultural_price_index` | Original guessed URL 404'd; corrected via the GOV.UK search API. Layout unverified. |
-| `elexon_market_index_prices` | URL confirmed after redirect. API terms and licence unverified. |
-| `orr_rail_fares_index` | Data-portal section reachable, but the specific fares-index table has **not** been identified; the registered URL is the passenger-usage section and is marked as such. |
-| `dft_bus_fares` | Redirects to the consolidated bus statistics tables; the specific fares table has not been identified. |
-| `ofcom_communications_pricing` | Ofcom returned **HTTP 403** to an automated request. No URL, format or licence confirmed; `source_url` is `unknown`. |
-| `autotrader_retail_price_index` | Commercial publisher, published inside press releases rather than as a data file. Redistribution terms unverified; `open_data=no`. |
-| `zoopla_rightmove_rentals` | Both sites returned **HTTP 403**. Neither publishes an open data file, and scraping is out of scope for this repository. `source_url` is `unknown`. |
+`implemented_verified` is reserved for a collector already merged to `main`
+whose source smoke, fresh-build, idempotency, revision, snapshot and as-of
+tests have passed. A PR or branch alone is not enough.
 
-Scraping of rental portals, airline fares, hotels, clothing and supermarkets is
-explicitly out of scope and is not planned in this repository.
+## Licence-blocked sources
+
+| source_id | Publicly usable evidence | Blocker |
+|---|---|---|
+| `brc_shop_price_monitor` | Monthly BRC releases disclose selected current overall, food, fresh-food, ambient-food and non-food rates. | Historical data and monthly Excel reports are subscription products; redistribution requires separate terms. |
+| `cbi_economic_surveys` | CBI releases disclose selected current percentage balances for Distributive Trades, Industrial Trends and Services. | CBI licenses survey data; no stable open historical file/API or storage permission was found. |
+
+Neither source has a collector repository or `predictor_map.csv` entry. This is
+intentional: public narrative releases are not being misrepresented as an open,
+reproducible historical contract. `SOURCE_FICHES.md` records the exact evidence
+and what licence would unlock implementation.
+
+## Other unimplemented or dataset-level blockers
+
+- HMRC tobacco and alcohol duty-rate histories remain HTML-only; the two
+  implemented bulletins are unaffected.
+- Ofcom, Auto Trader and commercial rental feeds remain candidates pending an
+  automatable licensed artifact.
+- Scraping rental portals, retailers or commercial survey pages is out of
+  scope.
