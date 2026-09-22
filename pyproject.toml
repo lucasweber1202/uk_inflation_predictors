@@ -9,11 +9,14 @@ include = ["scripts*"]
 name = "uk-inflation-predictors"
 version = "0.1.0"
 description = "Point-in-time research engine for UK CPI predictors"
-requires-python = ">=3.11"
-dependencies = ["numpy>=1.26", "pandas>=2.1", "sqlalchemy>=2.0", "PyYAML>=6.0"]
+requires-python = ">=3.11,<3.13"
+dependencies = ["numpy>=1.26,<2.3", "pandas>=2.1", "sqlalchemy>=2.0", "PyYAML>=6.0"]
 
 [project.optional-dependencies]
 dev = ["mypy>=1.11", "pytest>=8.0", "ruff>=0.6", "types-PyYAML>=6.0"]
+
+[tool.setuptools]
+packages = ["scripts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
